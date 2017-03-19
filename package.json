@@ -1,0 +1,22 @@
+{
+  "name": "backup_script_maker",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DmitrySmetyukhov/backup_script_maker.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DmitrySmetyukhov/backup_script_maker/issues"
+  },
+  "homepage": "https://github.com/DmitrySmetyukhov/backup_script_maker#readme",
+  "dependencies": {
+    "express": "^4.15.2"
+  }
+}
