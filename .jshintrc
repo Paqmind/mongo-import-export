@@ -1,0 +1,11 @@
+{
+  "undef": true,
+  "node": true,
+  "unused": true,
+  "esnext": true,
+  "globals": {
+    "angular": false,
+    "app": false,
+    "document": false
+  }
+}
