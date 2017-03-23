@@ -1,22 +1,52 @@
-"use strict";
-var fs = require('fs')
-let q = require('q')
-let mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/Test')
-let db = mongoose.connection;
+"use strict"
 
-db.once('open', function callback() {
-  console.log("Connected to DB!")
+let mongodb = require('mongodb');
+let MongoClient = mongodb.MongoClient;
+let url = 'mongodb://localhost:27017/Test';
+
+MongoClient.connect(url, function (err, db) {
+  if (err) {
+    console.log('Unable to connect to the mongoDB server. Error:', err);
+  } else {
+
+    console.log('Connection established to', url);
+
+    let collection = db.collection('posts');
+
+    let array = []
+    for (let i = 0; i < 100; i++) {
+      array.push({
+        title      : 'myTitle' + i,
+        description: 'myDescription' + i
+      })
+    }
+
+    let p1 = new Promise((resolve, reject) => {
+      collection.insert(array, (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log('Inserted %d documents into the "users" collection. The documents inserted with "_id" are:', result.length, result);
+          resolve('res');
+        }
+      })
+    })
+
+    p1.then(() => {
+      console.log('start')
+      collection.find().toArray((err, result) => {
+        if (err) {
+          console.log(err);
+        } else if (result.length) {
+          console.log('Found:', result);
+        } else {
+          console.log('No document(s) found with defined "find" criteria!');
+        }
+        collection.remove({}, (err, result) => {
+          db.close();
+        })
+      })
+    })
+
+  }
 });
-
-let Schema = mongoose.Schema
-let Article = new Schema({
-  title      : {type: String, required: true},
-  description: {type: String, required: true},
-})
-
-let ArticleModel = mongoose.model('Article', Article)
-
-module.exports.ArticleModel = ArticleModel
-module.exports.q = q
-module.exports.fs = fs
