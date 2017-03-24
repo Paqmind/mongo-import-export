@@ -1,49 +1,37 @@
-// "use strict"
-// let Set = require('./dbSet')
-// let Article = Set.ArticleModel
-// let q = Set.q
-// let fs = Set.fs
-//
-// let clearPending = q.defer()
-// let fillingPending = q.defer()
-//
-// Article.remove({}, () => {
-//   clearPending.resolve()
-// })
-//
-// clearPending.promise.then(() => {
-//   console.log('end clearing')
-//   let array = []
-//   for (let i = 0; i < 100; i++) {
-//     array.push(new Article({
-//       title      : 'myTitle' + i,
-//       description: 'myDescription' + i
-//     }))
-//   }
-//   Article.create(array, () => {
-//     console.log('save end')
-//     fillingPending.resolve()
-//   })
-// })
-//
-// fillingPending.promise.then(() => {
-//   Article.find(function (err, articles) {
-//     if (!err) {
-//       let file = fs.createWriteStream('array.txt');
-//       file.on('error', function (err) {
-//         console.log(err)
-//       });
-//       articles.forEach(function (v) {
-//         file.write(v + '\n');
-//       });
-//       file.end();
-//     } else  console.log(err.message)
-//   })
-// })
+"use strict"
+let fs = require('fs')
+let mongodb = require('mongodb');
+let MongoClient = mongodb.MongoClient;
+let url = 'mongodb://localhost:27017/Test';
 
+MongoClient.connect(url, function (err, db) {
+  if (err) {
+    console.log('Unable to connect to the mongoDB server. Error:', err);
+  } else {
 
+    console.log('Connection established to', url);
 
+    let collection = db.collection('posts');
 
+    let array = []
+    for (let i = 0; i < 3; i++) {
+      array.push({
+        title      : 'myTitle' + i,
+        description: 'myDescription' + i
+      })
+    }
 
-
-
+    collection.remove({}).then(() => {
+      collection.insert(array).then(() => {
+        collection.find().toArray().then((result) => {
+          db.close();
+          let file = fs.createWriteStream('array.txt');
+          result.forEach(function (v) {
+            file.write(JSON.stringify(v) + '\n');
+          });
+          file.end();
+        })
+      })
+    })
+  }
+});
