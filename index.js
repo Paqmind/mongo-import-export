@@ -22,16 +22,19 @@ MongoClient.connect(url, function (err, db) {
     }
 
     collection.remove({}).then(() => {
-      collection.insert(array).then(() => {
-        collection.find().toArray().then((result) => {
-          db.close();
-          let file = fs.createWriteStream('array.txt');
-          result.forEach(function (v) {
-            file.write(JSON.stringify(v) + '\n');
-          });
-          file.end();
-        })
-      })
+      return collection.insert(array)
     })
+      .then(() => {
+        return collection.find().toArray()
+      })
+      .then((result) => {
+        db.close();
+        let file = fs.createWriteStream('array.txt');
+        result.forEach(function (v) {
+          file.write(JSON.stringify(v) + '\n');
+        });
+        file.end();
+      })
   }
-});
+})
+;
