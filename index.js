@@ -6,6 +6,7 @@ let MongoClient = mongodb.MongoClient;
 let url = 'mongodb://localhost:27017/Test';
 
 MongoClient.connect(url, function (err, db) {
+
   if (err) {
     console.log('Unable to connect to the mongoDB server. Error:', err);
   } else {
@@ -14,29 +15,45 @@ MongoClient.connect(url, function (err, db) {
 
     let collection = db.collection('posts');
 
-    let array = Array(10).fill(null).map((x, i) =>
+    let array = Array(2).fill(null).map((x, i) =>
       ({
         title      : 'myTitle' + i,
         description: 'myDescription' + i
       })
     )
 
-    collection.remove({}).then(() => collection.insert(array))
-      .then(() => collection.find().toArray())
+    let main = async() => {
 
-      .then((result) => {
-        let file = fs.createWriteStream('array.json');
-        file.write(JSON.stringify(result))
-        db.close();
-        file.end()
-      })
+      await collection.remove({})
 
-      .then(() => {
-        let stream = fs.createReadStream('array.json', {flags: 'r', encoding: 'utf-8'});
-        stream.pipe(JSONStream.parse('*'))
-          .on('data', (d) => console.log(d))
-      })
+      await collection.insert(array)
+
+      let res = await collection.find().toArray()
+
+      let file = fs.createWriteStream('array.json');
+
+      await file.write(JSON.stringify(res))
+
+      await collection.remove({})
+
+      let stream = fs.createReadStream('array.json', {flags: 'r', encoding: 'utf-8'});
+
+      stream.pipe(JSONStream.parse('*'))
+        .on('data', async(d) => {
+
+          console.log(d)
+
+          await collection.insert(d)
+
+          let res1 = await collection.find().toArray()
+
+          db.close();
+
+          console.log(res1)
+        })
+    }
+
+    main();
 
   }
 })
-;
