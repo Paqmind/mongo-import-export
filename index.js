@@ -15,7 +15,7 @@ MongoClient.connect(url, function (err, db) {
 
     let collection = db.collection('posts');
 
-    let array = Array(2).fill(null).map((x, i) =>
+    let array = Array(3).fill(null).map((x, i) =>
       ({
         title      : 'myTitle' + i,
         description: 'myDescription' + i
@@ -39,21 +39,18 @@ MongoClient.connect(url, function (err, db) {
       let stream = fs.createReadStream('array.json', {flags: 'r', encoding: 'utf-8'});
 
       stream.pipe(JSONStream.parse('*'))
-        .on('data', async(d) => {
-
-          console.log(d)
-
-          await collection.insert(d)
-
+        .on('data', (d) => {
+          collection.insert(d)
+        })
+        .on('end', async() => {
           let res1 = await collection.find().toArray()
-
-          db.close();
-
           console.log(res1)
+          db.close();
         })
     }
 
     main();
-
   }
+
+
 })
