@@ -1,6 +1,5 @@
 "use strict"
 let fs = require('fs')
-let q = require('q')
 let JSONStream = require('JSONStream')
 let mongodb = require('mongodb')
 let MongoClient = mongodb.MongoClient
@@ -28,20 +27,21 @@ MongoClient.connect(url, function (err, db) {
 
       let stream = fs.createReadStream(data[0], {flags: 'r', encoding: 'utf-8'})
 
-      let array = []
+      let cName = '';
       stream.pipe(JSONStream.parse('*'))
+
         .on('data', (d) => {
-          array.push(d)
-        })
-        .on('end', async() => {
-          console.log(array)
-          for (let i = 0; i < array.length; i++) {
-            if(array[i].collection.length){
-              await db.collection(array[i].name).insert(array[i].collection)
-            }
+          if (typeof(d) === 'string') {
+            cName = d
+          } else {
+            db.collection(cName).insert(d)
           }
+        })
+
+        .on('end', () => {
           db.close()
         })
+
     })()
   }
 })
