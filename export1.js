@@ -33,17 +33,17 @@ let url = "mongodb://localhost:27017/" + dbName
 
         let s = db.collection(collectionName).find().stream({transform: JSON.stringify})
 
-        s.on("end", resolve)
-
         HL(s).map((x) => {
           return x + ",\n"
         }).pipe(file)
+        file.on('finish', resolve)
 
       })
 
       await FS.appendFile(collectionName + ".json", '{}]', function (err) {
         if (err) throw err;
       });
+
     }
 
   })().then(db.close.bind(db))

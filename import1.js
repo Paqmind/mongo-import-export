@@ -32,7 +32,9 @@ MongoClient.connect(url, function (err, db) {
           file.pipe(JSONStream.parse('*'))
 
             .on('data', async(d)=>{
-              d ? await db.collection(collectionName).insert(d) : null
+              if(Object.keys(d).length){
+                await db.collection(collectionName).insert(d)
+              }
             })
 
             .on('end', resolve)
