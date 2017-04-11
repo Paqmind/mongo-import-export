@@ -1,8 +1,16 @@
 "use strict"
-let fs = require('fs')
+let FS = require('fs')
 let JSONStream = require('JSONStream')
 let mongodb = require('mongodb')
 let MongoClient = mongodb.MongoClient
+let {Readable} = require("stream")
+let {Stringifier, Parser} = require("newline-json")
+
+
+let stringifier = new Stringifier()
+let parser = new Parser()
+
+
 let dbName = process.argv.slice(2) // [dbName]
 
 let url = 'mongodb://localhost:27017/' + dbName
@@ -15,33 +23,19 @@ MongoClient.connect(url, function (err, db) {
 
     console.log('Connection established to', url);
 
-    (async() => {
+    ;(async() => {
+      // TODO take collectionNames from scheme.json
+      let collectionNames = (await db.listCollections().toArray()).map(x => x.name)
 
-      let collectionNames = await db.listCollections().toArray()
-
-      await db.dropDatabase()
-
-      for (let i in collectionNames){
-
-        let collectionName = collectionNames[i].name;
-
-        let file = fs.createReadStream(collectionName + '.json', {flags: 'r', encoding: 'utf-8'})
-
+      for (let collectionName of collectionNames) {
+        let collection = db.collection(collectionName)
+        await collection.remove();
         await new Promise((resolve) => {
-
-          file.pipe(JSONStream.parse('*'))
-
-            .on('data', async(d)=>{
-              if(Object.keys(d).length){
-                await db.collection(collectionName).insert(d)
-              }
-            })
-
-            .on('end', resolve)
+          let file = FS.createReadStream(collectionName + ".log")
+          file.pipe(parser).on("data", d => collection.insert(d))
+          file.on("end", resolve)
         })
-
       }
-
     })().then(db.close.bind(db))
   }
 })
