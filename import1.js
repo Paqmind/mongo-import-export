@@ -10,6 +10,10 @@ let parser = new Parser()
 let [dbName] = process.argv.slice(2)
 let url = 'mongodb://localhost:27017/' + dbName
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 MongoClient.connect(url, (err, db) => {
   if (err) {
     console.log("Unable to connect to the mongoDB server. Error:", err)
@@ -34,10 +38,12 @@ MongoClient.connect(url, (err, db) => {
       await collection.remove()
       await new Promise((resolve) => {
         let file = FS.createReadStream(collectionName + ".log", {flags: 'r', encoding: 'utf-8'})
-        file.pipe(new Parser()).on("readable", () => {
+        file.pipe(new Parser()).on("readable", async() => {
+          console.log('readable')
           file.read()
+          await sleep(4000);
         })
-        file.on("data", d => collection.insert(d))
+        file.on("data", async(d) => console.log(d))
         file.on("end", resolve)
       })
     }
