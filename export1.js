@@ -15,8 +15,7 @@ MongoClient.connect(url, (err, db) => {
 
   ;(async() => {
     let collectionNames = (await db.listCollections().toArray()).map(x => x.name)
-    let file = FS.createWriteStream(scheme)
-    await file.write(JSON.stringify(collectionNames));
+    FS.writeFileSync(scheme, JSON.stringify(collectionNames))
     for (let collectionName of collectionNames) {
       let collection = db.collection(collectionName)
       await new Promise((resolve) => {
