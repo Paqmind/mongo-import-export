@@ -4,7 +4,7 @@ let MongoClient = MongoDB.MongoClient
 let {Parser} = require("newline-json")
 
 let [dbName, scheme] = process.argv.slice(2)
-let url = 'mongodb://localhost:27017/' + dbName
+let url = "mongodb://localhost:27017/" + dbName
 
 MongoClient.connect(url, (err, db) => {
   if (err) {
