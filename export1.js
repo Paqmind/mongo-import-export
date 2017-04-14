@@ -3,8 +3,7 @@ let MongoDB = require("mongodb")
 let MongoClient = MongoDB.MongoClient
 let {Stringifier} = require("newline-json")
 
-let scheme = "scheme.json"
-let [dbName] = process.argv.slice(2)
+let [dbName, scheme] = process.argv.slice(2)
 let url = "mongodb://localhost:27017/" + dbName
 
 MongoClient.connect(url, (err, db) => {
